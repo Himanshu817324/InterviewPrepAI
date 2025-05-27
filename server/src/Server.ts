@@ -17,9 +17,15 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
+// Before using OpenAI, verify the API key
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+// At the beginning of the app, check if the API key exists
+if (!process.env.OPENAI_API_KEY) {
+  console.error("WARNING: OpenAI API key is not set in environment variables");
+}
 
 // Generate AI Interview Questions
 app.post("/api/interview/generate-questions", async (req, res) => {
@@ -36,6 +42,12 @@ app.post("/api/interview/generate-questions", async (req, res) => {
     return res
       .status(400)
       .json({ error: "Topic is required to generate relevant questions" });
+  }
+
+  // Check if API key is configured
+  if (!process.env.OPENAI_API_KEY) {
+    console.error("OpenAI API key is not configured");
+    return res.status(500).json({ error: "OpenAI API key is not configured" });
   }
 
   try {
@@ -57,18 +69,39 @@ app.post("/api/interview/generate-questions", async (req, res) => {
     });
 
     const rawContent = aiResponse.choices?.[0]?.message?.content;
+    if (!rawContent) {
+      console.error("No content returned from OpenAI");
+      return res.status(500).json({ error: "No content returned from OpenAI" });
+    }
 
     try {
       // Attempt to parse the response as JSON
-      const questions = JSON.parse(rawContent || "[]");
+      const questions = JSON.parse(rawContent);
       res.json(questions);
     } catch (parseError) {
       console.error("Error parsing AI response as JSON:", parseError);
       console.error("Raw AI response:", rawContent);
-      res.status(500).json({
-        error: "Failed to parse AI response as JSON",
-        rawResponse: rawContent,
-      });
+
+      // Return a default set of questions when parsing fails
+      const defaultQuestions = [
+        {
+          category: "Technical",
+          question:
+            "Explain the difference between let, const, and var in JavaScript.",
+        },
+        {
+          category: "Behavioral",
+          question: "Describe a time when you had to meet a tight deadline.",
+        },
+        {
+          category: "Problem Solving",
+          question:
+            "How would you approach debugging a complex issue in production?",
+        },
+      ];
+
+      console.log("Returning default questions due to parsing error");
+      res.json(defaultQuestions);
     }
   } catch (error) {
     console.error("Error fetching AI questions:", error);
@@ -158,21 +191,20 @@ app.post("/upload", upload.single("file"), (req, res) => {
 // Serve uploaded files statically
 app.use("/uploads", express.static("uploads"));
 
-// Logging middleware for recommendation routes
-app.use(
-  "/api",
-  (req, res, next) => {
-    if (req.path.startsWith("/recommendations")) {
-      console.log(`Recommendation API request: ${req.method} ${req.path}`, {
-        query: req.query,
-        body: req.method !== "GET" ? req.body : undefined,
-        timestamp: new Date().toISOString(),
-      });
-    }
-    next();
-  },
-  recommendationRoutes
-);
+// Change this:
+app.use("/api/recommendations", recommendationRoutes);
+
+// Add a logging middleware before the route if needed
+app.use((req, res, next) => {
+  if (req.path.includes("/recommendations")) {
+    console.log(`Recommendation API request: ${req.method} ${req.path}`, {
+      query: req.query,
+      body: req.method !== "GET" ? req.body : undefined,
+      timestamp: new Date().toISOString(),
+    });
+  }
+  next();
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);

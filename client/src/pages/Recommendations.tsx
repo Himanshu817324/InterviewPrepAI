@@ -18,7 +18,7 @@ const Recommendations = () => {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/generate-recommendations",
+        "http://localhost:5000/api/recommendations/generate-recommendations",
         {
           method: "POST",
           headers: {

@@ -6,7 +6,7 @@ interface IUser extends Document {
   email: string;
   password: string;
   cnfPassword: string;
-  profilePic?: string; // Add this line
+  profilePic?: string;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -15,7 +15,7 @@ const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   cnfPassword: { type: String, required: true },
-  profilePic: { type: String, default: "" }, // Add this line
+  profilePic: { type: String, default: "" },
 });
 
 const User = mongoose.model<IUser>("User", UserSchema);

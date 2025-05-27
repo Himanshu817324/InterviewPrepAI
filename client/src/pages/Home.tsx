@@ -132,7 +132,7 @@ const Home = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 text-center">
+      {/* <footer className="bg-gray-800 text-white py-8 text-center">
         <p className="text-lg font-semibold">
           &copy; 2025 Interview Prep AI. All rights reserved.
         </p>
@@ -147,7 +147,7 @@ const Home = () => {
             Contact
           </Link>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 };
