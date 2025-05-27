@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
@@ -31,13 +31,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// At the beginning of the app, check if the API key exists
-if (!process.env.OPENAI_API_KEY) {
-  console.error("WARNING: OpenAI API key is not set in environment variables");
-}
-
 // Generate AI Interview Questions
-app.post("/api/interview/generate-questions", async (req, res) => {
+app.post("/api/interview/generate-questions", async (req: Request, res: Response) => {
   console.log("Received request to generate AI questions:", {
     body: req.body,
     timestamp: new Date().toISOString(),
@@ -123,7 +118,7 @@ app.post("/api/interview/generate-questions", async (req, res) => {
 });
 
 // Generate AI Feedback
-app.post("/api/interview/generate-response", async (req, res) => {
+app.post("/api/interview/generate-response", async (req: Request, res: Response) => {
   const { question, answer } = req.body;
 
   console.log("Received request to generate AI feedback:", {
@@ -177,9 +172,9 @@ app.post("/api/interview/generate-response", async (req, res) => {
 const storage = multer.diskStorage({
   destination: "./uploads/",
   filename: (
-    req: any,
-    file: { originalname: any },
-    cb: (arg0: null, arg1: any) => void
+    req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, filename: string) => void
   ) => {
     cb(null, Date.now() + path.extname(file.originalname));
   },
@@ -197,27 +192,20 @@ app.post("/upload", upload.single("file"), (req, res) => {
   res.json({ url: fileUrl });
 });
 
+// Use routes
+app.use("/api/auth", authRoutes);
+app.use("/api/interview", interviewRoutes);
+app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/user", userRoutes);
+
 // Serve uploaded files statically
 app.use("/uploads", express.static("uploads"));
 
-// Change this:
-app.use("/api/recommendations", recommendationRoutes);
-
-// Add a logging middleware before the route if needed
-app.use((req, res, next) => {
-  if (req.path.includes("/recommendations")) {
-    console.log(`Recommendation API request: ${req.method} ${req.path}`, {
-      query: req.query,
-      body: req.method !== "GET" ? req.body : undefined,
-      timestamp: new Date().toISOString(),
-    });
-  }
-  next();
+// Global error handler
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something broke!" });
 });
-
-app.use("/api/auth", authRoutes);
-app.use("/api/interview", interviewRoutes);
-app.use("/api/user", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
