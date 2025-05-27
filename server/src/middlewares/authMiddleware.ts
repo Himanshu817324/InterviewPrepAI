@@ -6,9 +6,12 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
 
-// Extend Request type (optional safety measure)
+// Extend Request type to match the type defined in @types/express/index.d.ts
 interface AuthenticatedRequest extends Request {
-  user?: { userId: string };
+  user?: {
+    id: string;
+    email: string;
+  };
 }
 
 export const authMiddleware = (
@@ -25,10 +28,14 @@ export const authMiddleware = (
 
   const token = authHeader.split(" ")[1];
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, JWT_SECRET, (err, decoded: any) => {
     if (err) return res.status(403).json({ message: "Invalid token" });
 
-    req.user = decoded as { userId: string };
+    // Map the decoded token to match the expected user type
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email || "", // Add email if available in token, or empty string
+    };
     next();
   });
 };

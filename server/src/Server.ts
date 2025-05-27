@@ -14,7 +14,16 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+
+// Configure CORS for production
+const allowedOrigins = ['http://localhost:5173', 'https://your-netlify-app.netlify.app'];
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? allowedOrigins.filter(origin => origin.includes('netlify'))
+    : allowedOrigins,
+  credentials: true
+}));
+
 app.use(express.json({ limit: "10mb" }));
 
 // Before using OpenAI, verify the API key
