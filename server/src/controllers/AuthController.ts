@@ -5,11 +5,29 @@ import User from "../models/User";
 import { registerSchema, loginSchema } from "../validation/authValidation";
 import { ZodError } from "zod";
 
-export const register = async (req: Request, res: Response) => {
+interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  cnfPassword: string;
+  profilePic?: string;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface UpdateRequest {
+  name: string;
+  email: string;
+  profilePic?: string;
+}
+
+export const register = async (req: Request & { body: RegisterRequest }, res: Response) => {
   try {
     // Validate input using Zod
-    const { name, email, password, cnfPassword, profilePic } =
-      registerSchema.parse(req.body);
+    const { name, email, password, cnfPassword, profilePic } = registerSchema.parse(req.body);
 
     console.log("Incoming request body:", req.body); // Debugging line
 
@@ -75,7 +93,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request & { body: LoginRequest }, res: Response) => {
   try {
     // Validate input using Zod
     const { email, password } = loginSchema.parse(req.body);
@@ -114,7 +132,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request & { body: UpdateRequest }, res: Response) => {
   try {
     const { name, email, profilePic } = req.body;
 

@@ -1,19 +1,37 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types", "./src/@types"],
     "target": "ES6",
     "module": "CommonJS",
+    "lib": [
+      "ES6",
+      "DOM"
+    ],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["node"],
-    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "allowJs": true
+    "isolatedModules": true,
+    "allowJs": true,
+    "noImplicitAny": false,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/@types"
+    ],
+    "types": [
+      "node",
+      "express",
+      "multer"
+    ]
   },
-  "include": ["src", "src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

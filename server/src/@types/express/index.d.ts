@@ -1,10 +1,12 @@
-import { Request } from "express";
+import { Request as ExpressRequest } from 'express';
 
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: {
-      id: string;
-      email: string;
-    };
+declare global {
+  namespace Express {
+    export interface Request extends ExpressRequest {
+      user?: {
+        id: string;
+        email: string;
+      };
+    }
   }
 }
